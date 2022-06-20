@@ -1,13 +1,19 @@
 ﻿using System;
 namespace TournoiSalade.Data
 {
-	public class Tournament
+	public class Tournament : ITournament
 	{
-		public List<Player> Players = new List<Player>();
-		public Tour CurrentTour { get; set; } = new Tour();
+		public List<Player> Players { get; set; }
+		public Tour CurrentTour { get; set; }
 
 		private Player? LastExcludedPlayer { get; set; }
 		private int TourNumber { get; set; } = 1;
+
+        public Tournament()
+        {
+			Players = new();
+			CurrentTour = new();
+		}
 
 		public void NextTour()
         {
