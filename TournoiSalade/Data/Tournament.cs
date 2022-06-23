@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Text.Json;
+
 namespace TournoiSalade.Data
 {
 	public class Tournament : ITournament
@@ -13,6 +15,7 @@ namespace TournoiSalade.Data
         {
 			Players = new();
 			CurrentTour = new();
+			TourNumber = 1;
 		}
 
 		public void NextTour()
@@ -34,6 +37,53 @@ namespace TournoiSalade.Data
         {
 			return Players.OrderByDescending(p => p.Score).ToList();
         }
+
+		public void Clear()
+        {
+			CurrentTour = new Tour();
+			Players.Clear();
+			LastExcludedPlayer = null;
+			TourNumber = 1;
+			DeleteTournamentFile();
+		}
+
+        public async Task<bool> Save()
+        {
+            try
+            {
+				DeleteTournamentFile();
+
+				await using FileStream createStream = File.Create(@"tournament.json");
+				await JsonSerializer.SerializeAsync(createStream, this);
+
+				return true;
+			}
+            catch (Exception ex)
+            {
+				return false;
+            }
+        }
+
+		public async Task<bool> Load()
+		{
+			try
+			{
+				await using FileStream createStream = File.OpenRead(@"tournament.json");
+				var tournament = await JsonSerializer.DeserializeAsync<Tournament>(createStream);
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				return false;
+			}
+		}
+
+		private void DeleteTournamentFile()
+        {
+			if (File.Exists("tournament.json"))
+				File.Delete("tournament.json");
+		}
 	}
 }
 

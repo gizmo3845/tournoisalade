@@ -8,6 +8,8 @@ namespace TournoiSalade.Data
 
 		void NextTour();
 		List<Player> GetPlayerRanks();
+		void Clear();
+		Task<bool> Save();
 	}
 }
 
