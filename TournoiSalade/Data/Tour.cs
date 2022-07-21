@@ -9,6 +9,11 @@ namespace TournoiSalade.Data
 
         public List<Match> Matches { get; set; }
 
+        public void New()
+        {
+            Matches?.Clear();
+        }
+
 		public void Generate(List<Player> players, Player? forcePlayer, out Player? excludedPlayer)
         {
             players.Shuffle();

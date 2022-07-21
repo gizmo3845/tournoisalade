@@ -1,13 +1,27 @@
 ﻿using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace TournoiSalade.Data
 {
-	public class Tournament
+	public class Tournament : ITournament
 	{
-		public List<Player> Players = new List<Player>();
+		public List<Player> Players { get; set; } = new List<Player>();
 		public Tour CurrentTour { get; set; } = new Tour();
 
-		private Player? LastExcludedPlayer { get; set; }
-		private int TourNumber { get; set; } = 1;
+		public Player? LastExcludedPlayer { get; set; }
+		public int TourNumber { get; set; } = 1;
+
+        public Tournament()
+        {
+			Load();
+        }
+
+		public void New()
+        {
+			CurrentTour.New();
+			Players.Clear();
+        }
 
 		public void NextTour()
         {
@@ -28,6 +42,33 @@ namespace TournoiSalade.Data
         {
 			return Players.OrderByDescending(p => p.Score).ToList();
         }
-	}
+
+        public async Task<bool> Load()
+        {
+			var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "tournament.json");
+			if(!File.Exists(path))
+				return false;
+
+			var jsonString = await File.ReadAllTextAsync(path);
+			var tournament = JsonSerializer.Deserialize<Tournament>(jsonString);
+			Players = tournament.Players;
+			CurrentTour = tournament.CurrentTour;
+			LastExcludedPlayer = tournament.LastExcludedPlayer;
+			TourNumber = tournament.TourNumber;
+
+			return true;
+        }
+
+        public async Task<bool> Save()
+        {
+			string jsonString = JsonSerializer.Serialize(this);
+
+			var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "tournament.json");
+
+			await File.WriteAllTextAsync(path, jsonString);
+
+			return jsonString != null;	
+		}
+    }
 }
 

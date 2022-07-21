@@ -1,9 +1,72 @@
 ﻿@page "/"
+@using TournoiSalade.Data
+@using Radzen
+@inject ITournament CurrentTournament
+@inject DialogService DialogServices
 
 <PageTitle>Tournoi Salade</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Joueurs</h1>
 
-Welcome to your new app.
+<RadzenCard>
+    <h4 class="mb-4">Ajouter un joueur</h4>
+    <RadzenTextBox Placeholder="Nom" TValue="string" Change=@OnNameChange Class="w-100" />
+    <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="add_circle_outline" Class="m-2" Click=@AddPlayer Text="Ajouter" />
+</RadzenCard>
+<br />
+<RadzenDataGrid @ref="playersGrid" AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.Players" TItem="Player">
+    <Columns>
+        <RadzenDataGridColumn Width="50px" TItem="Player" Title="#" Filterable="false" Sortable="false" TextAlign="TextAlign.Center">
+            <Template Context="data">
+                @(CurrentTournament.Players.IndexOf(data) + 1)
+            </Template>
+        </RadzenDataGridColumn>      
+        <RadzenDataGridColumn TItem="Player" Property="Name" Title="Nom" />
+        <RadzenDataGridColumn Width="200px" TItem="Player" Property="Name" Title="Action">
+            <Template Context="player">
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="danger" Class="m-2" Click=@(() => DeletePlayer(@player.Name)) Text="Supprimer" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
 
+@code {
 
+    RadzenDataGrid<Player> playersGrid;
+    string newPlayerName;
+
+    protected override void OnInitialized()
+    {
+
+    }
+
+    async Task DeletePlayer(string playerName)
+    {
+        var player = CurrentTournament.Players.FirstOrDefault(p => p.Name == playerName);
+        if (player != null)
+            CurrentTournament.Players.Remove(player);
+
+        await CurrentTournament.Save();
+        this.StateHasChanged();
+    }
+
+    async Task AddPlayer()
+    {
+        string playerName = newPlayerName;
+        if( CurrentTournament.Players.Any(p => p.Name.ToLower() == playerName.ToLower()) )
+        {
+            await DialogServices.OpenAsync($"Le joueur {playerName} existe déjà", ds => @<div>Le joueur {playerName} existe déjà</div>, new DialogOptions() { CloseDialogOnOverlayClick = true });            
+        }
+        else
+        {
+            Player p = new Player() { Name = playerName };
+            CurrentTournament.Players.Add(p);
+            this.StateHasChanged();
+        }
+    }
+
+    void OnNameChange(string value)
+    {
+        newPlayerName = value;
+    }
+}
