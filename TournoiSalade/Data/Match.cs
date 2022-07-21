@@ -3,8 +3,8 @@ namespace TournoiSalade.Data
 {
 	public class Match
 	{
-		public Team Team1 { get; set; }
-		public Team Team2 { get; set; }
+		public Team? Team1 { get; set; }
+		public Team? Team2 { get; set; }
 
 		public int Team1Result { get; set; }
 		public int Team2Result { get; set; }
