@@ -38,6 +38,14 @@ namespace TournoiSalade.Data
 			TourNumber++;
 		}
 
+		public void ComputePlayerPoints()
+        {
+            foreach (var match in CurrentTour.Matches)
+            {
+				match.UpdatePlayerScore();
+            }
+        }
+
 		public List<Player> GetPlayerRanks()
         {
 			return Players.OrderByDescending(p => p.Score).ToList();

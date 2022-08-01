@@ -50,15 +50,25 @@ namespace TournoiSalade.Data
 
         public void SetMatchResult(int team1Id, int team1Result, int team2Id, int team2Result)
         {
-            var match = Matches.First(m => m.Team1.Id == team1Id && m.Team2.Id == team2Id);
-            match.SetResult(team1Result, team2Result);
+            var match = Matches.FirstOrDefault(m => m.Team1.Id == team1Id && m.Team2.Id == team2Id);
+            //if(match != null)
+              //  match.SetResult(team1Result, team2Result);
+        }
+
+        public bool AllMatchHaveResult()
+        {
+            if (Matches == null)
+                return false;
+
+            var match = Matches.FirstOrDefault(m => m.Team1Result == 0 && m.Team2Result == 0);
+            return (match == null);
         }
 
         private void GenerateMatches(List<Team> teams)
         {
             Matches = new List<Match>();
             for (int i = 0; i < teams.Count / 2; i++)
-            {
+            {   
                 Match match = new Match() { Team1 = teams[i], Team2 = teams[teams.Count - i - 1] };
                 Matches.Add(match);
             }

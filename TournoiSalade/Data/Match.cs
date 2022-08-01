@@ -9,15 +9,7 @@ namespace TournoiSalade.Data
 		public int Team1Result { get; set; }
 		public int Team2Result { get; set; }
 
-		public void SetResult(int team1Score, int team2Score)
-        {
-			Team1Result = team1Score;
-			Team2Result = team2Score;
-
-			UpdatePlayerScore();
-		}
-
-		private void UpdatePlayerScore()
+		public void UpdatePlayerScore()
         {
 			if (Team1Result > Team2Result)
             {

@@ -1,19 +1,73 @@
 ﻿@page "/tours"
+@using TournoiSalade.Data
+@using Radzen
+@inject ITournament CurrentTournament
+@inject DialogService DialogServices
 
 <PageTitle>Tours</PageTitle>
 
 <h1>Tours</h1>
 
-<p role="status">Current count: @currentCount</p>
+<RadzenButton Click=@(args => NewRound()) Text="Nouveau tour" Disabled="false" Icon="add_circle_outline" ButtonStyle="ButtonStyle.Success" />
+<RadzenButton Click=@(args => CloseRound()) Text="Terminer tour" Disabled="@CannotCloseRound()" Icon="report" ButtonStyle="ButtonStyle.Danger" />
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+<br />
+<br />
+
+<RadzenDataGrid @ref="matchGrid" AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.CurrentTour.Matches" TItem="Match">
+    <Columns>
+        <RadzenDataGridColumn TItem="Match" Title="Team1">
+            <Template Context="data">
+                @data.Team1.Player1.Name - @data.Team1.Player2.Name
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Match" Title="Score Team1">
+            <Template Context="data">
+                <RadzenNumeric @bind-Value=@data.Team1Result TValue="int" Min="0" Max="8" Change=@OnChange />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Match" Title="Score Team2">
+            <Template Context="data">
+                <RadzenNumeric @bind-Value=@data.Team2Result TValue="int" Min="0" Max="8" Change=@OnChange />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Match" Title="Team2">
+            <Template Context="data">
+                @data.Team2.Player1.Name - @data.Team2.Player2.Name
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
 
 @code {
-    private int currentCount = 0;
+    RadzenDataGrid<Match> matchGrid;
+    bool CloseDisabled;
 
-    private void IncrementCount()
+    private void NewRound()
     {
-        currentCount++;
+        CurrentTournament.NextTour();
+        CloseDisabled = false;
+        matchGrid.Reload();
+    }
+
+    private void CloseRound()
+    {
+        // Compute all player scores
+        CurrentTournament.ComputePlayerPoints();
+        CurrentTournament.NextTour();
+        this.StateHasChanged();
+    }
+
+    bool CannotCloseRound()
+    {
+        return !CurrentTournament.CurrentTour.AllMatchHaveResult();
+    }
+
+    void OnChange()
+    {
+        CurrentTournament.Save();
+        this.StateHasChanged();
     }
 }
 

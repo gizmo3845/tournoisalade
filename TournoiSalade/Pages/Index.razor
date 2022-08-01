@@ -47,7 +47,7 @@
             CurrentTournament.Players.Remove(player);
 
         await CurrentTournament.Save();
-        this.StateHasChanged();
+        this.playersGrid.Reload();
     }
 
     async Task AddPlayer()
@@ -61,7 +61,8 @@
         {
             Player p = new Player() { Name = playerName };
             CurrentTournament.Players.Add(p);
-            this.StateHasChanged();
+            await CurrentTournament.Save();
+            this.playersGrid.Reload();
         }
     }
 

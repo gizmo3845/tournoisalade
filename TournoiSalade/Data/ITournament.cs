@@ -7,6 +7,7 @@
 
         void New();
         void NextTour();
+        void ComputePlayerPoints();
         List<Player> GetPlayerRanks();
 
         Task<bool> Load();
