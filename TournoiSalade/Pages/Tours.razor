@@ -6,11 +6,23 @@
 
 <PageTitle>Tours</PageTitle>
 
-<h1>Tours</h1>
+<h1>Tour @CurrentTournament.TourNumber</h1>
 
-<RadzenButton Click=@(args => NewRound()) Text="Nouveau tour" Disabled="false" Icon="add_circle_outline" ButtonStyle="ButtonStyle.Success" />
+<RadzenButton Click=@(args => NewRound()) Text="Nouveau tour" Disabled="@CannotNewRound()" Icon="add_circle_outline" ButtonStyle="ButtonStyle.Success" />
 <RadzenButton Click=@(args => CloseRound()) Text="Terminer tour" Disabled="@CannotCloseRound()" Icon="report" ButtonStyle="ButtonStyle.Danger" />
 
+<br />
+<br />
+
+<RadzenDataGrid AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.CurrentTour.ExcludedPlayers" TItem="Player">
+    <Columns>
+        <RadzenDataGridColumn TItem="Player" Title="Joueur ne participant pas à ce tour">
+            <Template Context="data">
+                @data.Name
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
 
 <br />
 <br />
@@ -44,24 +56,39 @@
     RadzenDataGrid<Match> matchGrid;
     bool CloseDisabled;
 
-    private void NewRound()
+    private async Task NewRound()
     {
-        CurrentTournament.NextTour();
-        CloseDisabled = false;
-        matchGrid.Reload();
+        var yes = await DialogServices.Confirm("On commence un nouveau tour ?", "Nouveau tour", new ConfirmOptions() { OkButtonText = "Oui", CancelButtonText = "Non" });
+
+        if (yes.HasValue && yes.Value)
+        {
+            await CurrentTournament.NextTour();
+            CloseDisabled = false;
+            await matchGrid.Reload();
+        }
     }
 
-    private void CloseRound()
+    private async Task CloseRound()
     {
-        // Compute all player scores
-        CurrentTournament.ComputePlayerPoints();
-        CurrentTournament.NextTour();
-        this.StateHasChanged();
+        var yes = await DialogServices.Confirm("On termine le tour ?", "Fermeture tour", new ConfirmOptions() { OkButtonText = "Oui", CancelButtonText = "Non" });
+
+        if (yes.HasValue && yes.Value)
+        {
+            // Compute all player scores
+            CurrentTournament.ComputePlayerPoints();
+            CurrentTournament.NextTour();
+            this.StateHasChanged();
+        }
     }
 
     bool CannotCloseRound()
     {
-        return !CurrentTournament.CurrentTour.AllMatchHaveResult();
+        return !CurrentTournament.CurrentTour.AllMatchHaveResult() || CannotNewRound();
+    }
+
+    bool CannotNewRound()
+    {
+        return CurrentTournament.Players.Count < 4;
     }
 
     void OnChange()

@@ -6,36 +6,34 @@ namespace TournoiSalade.Data
 {
 	public class Tournament : ITournament
 	{
+		private bool _isLoaded = false;
+
 		public List<Player> Players { get; set; } = new List<Player>();
 		public Tour CurrentTour { get; set; } = new Tour();
 
 		public Player? LastExcludedPlayer { get; set; }
-		public int TourNumber { get; set; } = 1;
+		public int TourNumber { get; set; } = 0;
 
-        public Tournament()
-        {
-			Load();
-        }
-
-		public void New()
+		public async Task New()
         {
 			CurrentTour.New();
 			Players.Clear();
-        }
+			TourNumber = 0;
+			LastExcludedPlayer = null;
+			await Save();
+		}
 
-		public void NextTour()
+		public async Task NextTour()
         {
-			Console.WriteLine($"TOUR {TourNumber} --------------");
-
 			if (LastExcludedPlayer != null && !Players.Contains(LastExcludedPlayer))
 				LastExcludedPlayer = null;
 
 			CurrentTour.Generate(Players, LastExcludedPlayer, out Player? lastExcludedPlayer);
 			LastExcludedPlayer = lastExcludedPlayer;
-			Console.WriteLine(CurrentTour.ToString());
-			Console.WriteLine($"Exluded : {LastExcludedPlayer}");
 
 			TourNumber++;
+
+			await Save();
 		}
 
 		public void ComputePlayerPoints()
@@ -53,6 +51,9 @@ namespace TournoiSalade.Data
 
         public async Task<bool> Load()
         {
+			if (_isLoaded)
+				return true;
+
 			var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "tournament.json");
 			if(!File.Exists(path))
 				return false;
@@ -63,6 +64,8 @@ namespace TournoiSalade.Data
 			CurrentTour = tournament.CurrentTour;
 			LastExcludedPlayer = tournament.LastExcludedPlayer;
 			TourNumber = tournament.TourNumber;
+
+			_isLoaded = true;
 
 			return true;
         }

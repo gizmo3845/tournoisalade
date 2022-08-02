@@ -8,10 +8,12 @@ namespace TournoiSalade.Data
         private static Random _random = new Random();
 
         public List<Match> Matches { get; set; }
+        public List<Player> ExcludedPlayers { get; set; }
 
         public void New()
         {
             Matches?.Clear();
+            ExcludedPlayers?.Clear();
         }
 
 		public void Generate(List<Player> players, Player? forcePlayer, out Player? excludedPlayer)
@@ -44,6 +46,8 @@ namespace TournoiSalade.Data
                 players.Shuffle();
                 return GenerateTeams(players, forcePlayer, out excludedPlayer);
             }
+
+            ExcludedPlayers = excludedPlayers.ToList();
 
             return teams;
         }

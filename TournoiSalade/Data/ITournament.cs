@@ -4,9 +4,10 @@
     {
         List<Player> Players { get; set; }
         Tour CurrentTour { get; set; }
+        int TourNumber { get; set; }
 
-        void New();
-        void NextTour();
+        Task New();
+        Task NextTour();
         void ComputePlayerPoints();
         List<Player> GetPlayerRanks();
 

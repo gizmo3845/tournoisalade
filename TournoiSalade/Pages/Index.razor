@@ -10,7 +10,7 @@
 
 <RadzenCard>
     <h4 class="mb-4">Ajouter un joueur</h4>
-    <RadzenTextBox Placeholder="Nom" TValue="string" Change=@OnNameChange Class="w-100" />
+    <RadzenTextBox @ref="playerTextBox" Placeholder="Nom" TValue="string" Change=@OnNameChange Class="w-100" />
     <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="add_circle_outline" Class="m-2" Click=@AddPlayer Text="Ajouter" />
 </RadzenCard>
 <br />
@@ -33,21 +33,27 @@
 @code {
 
     RadzenDataGrid<Player> playersGrid;
+    RadzenTextBox playerTextBox;
     string newPlayerName;
 
     protected override void OnInitialized()
     {
-
+        CurrentTournament.Load();
     }
 
     async Task DeletePlayer(string playerName)
     {
-        var player = CurrentTournament.Players.FirstOrDefault(p => p.Name == playerName);
-        if (player != null)
-            CurrentTournament.Players.Remove(player);
+        var yes = await DialogServices.Confirm($"Supprimer le joueur {playerName} ?", "Suppression", new ConfirmOptions() { OkButtonText = "Oui", CancelButtonText = "Non" });
 
-        await CurrentTournament.Save();
-        this.playersGrid.Reload();
+        if (yes.HasValue && yes.Value)
+        {
+            var player = CurrentTournament.Players.FirstOrDefault(p => p.Name == playerName);
+            if (player != null)
+                CurrentTournament.Players.Remove(player);
+
+            await CurrentTournament.Save();
+            await this.playersGrid.Reload();
+        }
     }
 
     async Task AddPlayer()
@@ -55,14 +61,16 @@
         string playerName = newPlayerName;
         if( CurrentTournament.Players.Any(p => p.Name.ToLower() == playerName.ToLower()) )
         {
-            await DialogServices.OpenAsync($"Le joueur {playerName} existe déjà", ds => @<div>Le joueur {playerName} existe déjà</div>, new DialogOptions() { CloseDialogOnOverlayClick = true });            
+            await DialogServices.OpenAsync($"Le joueur {playerName} existe déjà", ds => @<div>Le joueur {playerName} existe déjà</div>, new DialogOptions() { CloseDialogOnOverlayClick = true });
         }
         else
         {
             Player p = new Player() { Name = playerName };
             CurrentTournament.Players.Add(p);
+            CurrentTournament.Players.Sort((a, b) => a.Name.CompareTo(b.Name));
+            playerTextBox.Value = "";
             await CurrentTournament.Save();
-            this.playersGrid.Reload();
+            await this.playersGrid.Reload();
         }
     }
 

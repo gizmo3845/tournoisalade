@@ -1,6 +1,6 @@
 ﻿@using TournoiSalade.Data
 @inject ITournament CurrentTournament
-@inject DialogService DialogService
+@inject DialogService DialogServices
 
 
 <div class="top-row ps-3 navbar navbar-dark">
@@ -32,7 +32,7 @@
     </nav>
 
     <div class="d-grid col-10 mx-auto">
-        <RadzenButton Text="Nouveau tournoi" ButtonStyle="ButtonStyle.Secondary" Click=@(args => DialogService.Confirm("Créer nouveau tournoi ?", "Nouveau tournoi", new ConfirmOptions() { OkButtonText = "Créer", CancelButtonText = "Annuler" })) />
+        <RadzenButton Text="Nouveau tournoi" ButtonStyle="ButtonStyle.Secondary" Click=@OnNewTournament />
     </div>
 
 </div>
@@ -49,25 +49,21 @@
 
     protected override void OnInitialized()
     {
-        DialogService.OnOpen += Open;
-        DialogService.OnClose += Close;
     }
 
     public void Dispose()
     {
-        // The DialogService is a singleton so it is advisable to unsubscribe.
-        DialogService.OnOpen -= Open;
-        DialogService.OnClose -= Close;
     }
 
-    void Open(string title, Type type, Dictionary<string, object> parameters, DialogOptions options)
+    async Task OnNewTournament()
     {
-    }
+        var yes = await DialogServices.Confirm("Créer nouveau tournoi ?", "Nouveau tournoi", new ConfirmOptions() { OkButtonText = "Créer", CancelButtonText = "Annuler" });
 
-    void Close(dynamic result)
-    {
-        if(result != null && (bool)result)
-            CurrentTournament.New();
+        if (yes.HasValue && yes.Value)
+        {
+            await CurrentTournament.New();
+            this.StateHasChanged();
+        }
     }
- }
+}
 
