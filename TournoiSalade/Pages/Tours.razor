@@ -8,15 +8,14 @@
 
 <h1>Tour @CurrentTournament.TourNumber</h1>
 
-<RadzenButton Click=@(args => NewRound()) Text="Nouveau tour" Disabled="@CannotNewRound()" Icon="add_circle_outline" ButtonStyle="ButtonStyle.Success" />
-<RadzenButton Click=@(args => CloseRound()) Text="Terminer tour" Disabled="@CannotCloseRound()" Icon="report" ButtonStyle="ButtonStyle.Danger" />
+<RadzenButton Click=@(args => NextRound()) Text="Prochain tour" Disabled="@DisabledNextRound()" Icon="refresh" ButtonStyle="ButtonStyle.Success" />
 
 <br />
 <br />
 
 <RadzenDataGrid AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.CurrentTour.ExcludedPlayers" TItem="Player">
     <Columns>
-        <RadzenDataGridColumn TItem="Player" Title="Joueur ne participant pas à ce tour">
+        <RadzenDataGridColumn TItem="Player" Title="Joueurs ne participants pas à ce tour">
             <Template Context="data">
                 @data.Name
             </Template>
@@ -68,27 +67,22 @@
         }
     }
 
-    private async Task CloseRound()
+    private async Task NextRound()
     {
-        var yes = await DialogServices.Confirm("On termine le tour ?", "Fermeture tour", new ConfirmOptions() { OkButtonText = "Oui", CancelButtonText = "Non" });
+        var yes = await DialogServices.Confirm("Prochain tour ?", "Prochain tour", new ConfirmOptions() { OkButtonText = "Oui", CancelButtonText = "Non" });
 
         if (yes.HasValue && yes.Value)
         {
             // Compute all player scores
             CurrentTournament.ComputePlayerPoints();
-            CurrentTournament.NextTour();
+            await CurrentTournament.NextTour();
             this.StateHasChanged();
         }
     }
 
-    bool CannotCloseRound()
+    bool DisabledNextRound()
     {
-        return !CurrentTournament.CurrentTour.AllMatchHaveResult() || CannotNewRound();
-    }
-
-    bool CannotNewRound()
-    {
-        return CurrentTournament.Players.Count < 4;
+        return (CurrentTournament.TourNumber > 0 && !CurrentTournament.CurrentTour.AllMatchHaveResult()) || CurrentTournament.Players.Count < 4;
     }
 
     void OnChange()

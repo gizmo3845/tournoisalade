@@ -11,7 +11,7 @@ namespace TournoiSalade.Data
 		public List<Player> Players { get; set; } = new List<Player>();
 		public Tour CurrentTour { get; set; } = new Tour();
 
-		public Player? LastExcludedPlayer { get; set; }
+		public List<Player> LastExcludedPlayers { get; set; } = new List<Player>();
 		public int TourNumber { get; set; } = 0;
 
 		public async Task New()
@@ -19,17 +19,14 @@ namespace TournoiSalade.Data
 			CurrentTour.New();
 			Players.Clear();
 			TourNumber = 0;
-			LastExcludedPlayer = null;
+			LastExcludedPlayers = new();
 			await Save();
 		}
 
 		public async Task NextTour()
         {
-			if (LastExcludedPlayer != null && !Players.Contains(LastExcludedPlayer))
-				LastExcludedPlayer = null;
-
-			CurrentTour.Generate(Players, LastExcludedPlayer, out Player? lastExcludedPlayer);
-			LastExcludedPlayer = lastExcludedPlayer;
+			CurrentTour.Generate(Players, LastExcludedPlayers, out List<Player> lastExcludedPlayers);
+			LastExcludedPlayers = lastExcludedPlayers;
 
 			TourNumber++;
 
@@ -62,7 +59,7 @@ namespace TournoiSalade.Data
 			var tournament = JsonSerializer.Deserialize<Tournament>(jsonString);
 			Players = tournament.Players;
 			CurrentTour = tournament.CurrentTour;
-			LastExcludedPlayer = tournament.LastExcludedPlayer;
+			LastExcludedPlayers = tournament.LastExcludedPlayers;
 			TourNumber = tournament.TourNumber;
 
 			_isLoaded = true;
