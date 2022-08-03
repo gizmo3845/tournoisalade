@@ -22,6 +22,11 @@
             </Template>
         </RadzenDataGridColumn>      
         <RadzenDataGridColumn TItem="Player" Property="Name" Title="Nom" />
+        <RadzenDataGridColumn Width="200px" TItem="Player" Title="Enfant">
+            <Template Context="player">
+                <RadzenCheckBox @bind-Value=@player.IsChild TriState="false" TValue="bool" Change=@OnChildChange/>
+            </Template>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="200px" TItem="Player" Property="Name" Title="Action">
             <Template Context="player">
                 <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="danger" Class="m-2" Click=@(() => DeletePlayer(@player.Name)) Text="Supprimer" />
@@ -65,6 +70,9 @@
         List<string> existingPlayers = new();
         foreach (var playerName in players)
         {
+            if (String.IsNullOrEmpty(playerName))
+                continue;
+
             if( CurrentTournament.Players.Any(p => p.Name.ToLower() == playerName.ToLower()) )
             {
                 existingPlayers.Add(playerName);
@@ -82,12 +90,13 @@
         if(existingPlayers.Any())
         {
             await DialogServices.OpenAsync($"Joueur(s) déjà existant(s)", ds => 
-                @<div><ul>@foreach(var existingPlayer in existingPlayers){<li>@existingPlayer</li>}</ul></div>, new DialogOptions() { CloseDialogOnOverlayClick = true });
-        
+        @<div><ul>@foreach(var existingPlayer in existingPlayers){<li>@existingPlayer</li>}</ul></div>
+    , new DialogOptions() { CloseDialogOnOverlayClick = true });
+
             foreach(var existingPlayer in existingPlayers)
                 playerTextBox.Value += existingPlayer + '\n';
         }
-        
+
         await CurrentTournament.Save();
         await this.playersGrid.Reload();
     }
@@ -95,5 +104,10 @@
     void OnNameChange(string value)
     {
         newPlayerName = value;
+    }
+
+    void OnChildChange(bool value)
+    {
+        CurrentTournament.Save();
     }
 }

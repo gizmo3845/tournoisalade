@@ -13,13 +13,19 @@ namespace TournoiSalade.Data
         {
 			if (Team1Result > Team2Result)
             {
-				Team1.Player1.Score += 3;
-				Team1.Player2.Score += 3;
+				Team1.Player1.Score += Team1.Player1.IsChild ? 4 : 3;
+				Team1.Player2.Score += Team1.Player2.IsChild ? 4 : 3;
+
+				Team2.Player1.Score += Team2.Player1.IsChild ? 1 : 0;
+				Team2.Player2.Score += Team2.Player2.IsChild ? 1 : 0;
 			}
             else
             {
-				Team2.Player1.Score += 3;
-				Team2.Player2.Score += 3;
+				Team2.Player1.Score += Team2.Player1.IsChild ? 4 : 3;
+				Team2.Player2.Score += Team2.Player2.IsChild ? 4 : 3;
+
+				Team1.Player1.Score += Team1.Player1.IsChild ? 1 : 0;
+				Team1.Player2.Score += Team1.Player2.IsChild ? 1 : 0;
 			}
         }
 

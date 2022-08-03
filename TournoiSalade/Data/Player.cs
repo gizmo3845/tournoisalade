@@ -6,6 +6,8 @@ namespace TournoiSalade.Data
 		public string Name { get; set; }
 		public int Score { get; set; }
 
+        public bool IsChild { get; set; }
+
         public override bool Equals(object? player)
         {
 			if (player == null)
