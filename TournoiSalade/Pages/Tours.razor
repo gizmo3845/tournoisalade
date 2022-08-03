@@ -35,12 +35,12 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Match" Title="Score Team1">
             <Template Context="data">
-                <RadzenNumeric @bind-Value=@data.Team1Result TValue="int" Min="0" Max="8" Change=@OnChange />
+                <RadzenNumeric @bind-Value=@data.Team1Result TValue="int" Min="0" Max="80" Change=@OnChange />
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Match" Title="Score Team2">
             <Template Context="data">
-                <RadzenNumeric @bind-Value=@data.Team2Result TValue="int" Min="0" Max="8" Change=@OnChange />
+                <RadzenNumeric @bind-Value=@data.Team2Result TValue="int" Min="0" Max="80" Change=@OnChange />
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Match" Title="Team2">
