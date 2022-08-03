@@ -5,7 +5,8 @@
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Tournoi Salade</a>
+        <img src="images/tcl.png" height="32" width="32" />
+        <a class="navbar-brand" href="">Tournoi Salade TCL</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -16,17 +17,17 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Joueurs
+                <span class="oi oi-person" aria-hidden="true"></span> Joueurs
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="tours">
-                <span class="oi oi-plus" aria-hidden="true"></span> Tours
+                <span class="oi oi-reload" aria-hidden="true"></span> Tours
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="classement">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Classement
+                <span class="oi oi-menu" aria-hidden="true"></span> Classement
             </NavLink>
         </div>
     </nav>
@@ -57,7 +58,7 @@
 
     async Task OnNewTournament()
     {
-        var yes = await DialogServices.Confirm("Créer nouveau tournoi ?", "Nouveau tournoi", new ConfirmOptions() { OkButtonText = "Créer", CancelButtonText = "Annuler" });
+        var yes = await DialogServices.Confirm("Créer nouveau tournoi et tout effacer (tours et joueurs) ?", "Nouveau tournoi", new ConfirmOptions() { OkButtonText = "Créer", CancelButtonText = "Annuler" });
 
         if (yes.HasValue && yes.Value)
         {

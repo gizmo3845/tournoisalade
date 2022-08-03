@@ -74,14 +74,16 @@ namespace TournoiSalade.Data
             if (extraTeamCount > 0)
             {
                 IEnumerable<Team>? teamsToRemove;
+                int maxTry = 10;
                 // Remove extra team at last of the list
                 do
                 {
                     teams.Shuffle();
                     teamsToRemove = teams.Skip(Math.Max(0, teams.Count() - extraTeamCount));
+                    maxTry--;
                     // If teams to remove contains forcePlayers then do nothing and exclude other teams
                 }
-                while (teamsToRemove.Any(t => forcePlayers.Contains(t.Player1) || forcePlayers.Contains(t.Player2)));
+                while (teamsToRemove.Any(t => forcePlayers.Contains(t.Player1) || forcePlayers.Contains(t.Player2)) || maxTry > 0);
 
                 foreach (var team in teamsToRemove)
                 {
