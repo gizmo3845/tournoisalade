@@ -1,7 +1,7 @@
 ﻿@using TournoiSalade.Data
 @inject ITournament CurrentTournament
 @inject DialogService DialogServices
-
+@inject AuthenticationManagement Authentication
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -58,6 +58,10 @@
 
     async Task OnNewTournament()
     {
+        var code = await Authentication.GetCode();
+        if (code != "386392")
+            return;
+
         var yes = await DialogServices.Confirm("Créer nouveau tournoi et tout effacer (tours et joueurs) ?", "Nouveau tournoi", new ConfirmOptions() { OkButtonText = "Créer", CancelButtonText = "Annuler" });
 
         if (yes.HasValue && yes.Value)
