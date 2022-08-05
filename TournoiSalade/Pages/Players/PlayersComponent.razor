@@ -1,0 +1,69 @@
+﻿@page "/players/player"
+@using TournoiSalade.Data
+@using Radzen
+@namespace TournoiSalade.Pages
+@inject ITournament CurrentTournament
+
+<h1>Tour @CurrentTournament.TourNumber</h1>
+
+<br />
+<br />
+
+<RadzenDataGrid AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.CurrentTour.ExcludedPlayers" TItem="Player">
+    <Columns>
+        <RadzenDataGridColumn TItem="Player" Title="Joueurs ne participants pas à ce tour">
+            <Template Context="data">
+                @data.Name
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+<br />
+<br />
+
+<RadzenDataGrid AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.CurrentTour.Matches" TItem="Match">
+    <Columns>
+        <RadzenDataGridColumn TItem="Match" Title="Team1">
+            <Template Context="data">
+                @data.Team1.Player1.Name - @data.Team1.Player2.Name
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Match" Title="Score Team1">
+            <Template Context="data">
+                <RadzenNumeric @bind-Value=@data.Team1Result TValue="int" Min="0" Max="80" ReadOnly="true" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Match" Title="Score Team2">
+            <Template Context="data">
+                <RadzenNumeric @bind-Value=@data.Team2Result TValue="int" Min="0" Max="80" ReadOnly="true" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Match" Title="Team2">
+            <Template Context="data">
+                @data.Team2.Player1.Name - @data.Team2.Player2.Name
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+<br />
+<br />
+
+<h1>Classement</h1>
+
+<RadzenDataGrid AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.GetPlayerRanks()" TItem="Player">
+    <Columns>
+        <RadzenDataGridColumn Width="50px" TItem="Player" Title="#" Filterable="false" Sortable="false" TextAlign="TextAlign.Center">
+            <Template Context="data">
+                @(CurrentTournament.GetPlayerRanks().IndexOf(data) + 1)
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Player" Property="Name" Title="Nom" />
+        <RadzenDataGridColumn TItem="Player" Property="Score" Title="Points" />
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+}
+

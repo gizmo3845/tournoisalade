@@ -1,8 +1,11 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.WebUtilities
 @using TournoiSalade.Data
 @using Radzen
 @inject ITournament CurrentTournament
 @inject DialogService DialogServices
+@inject NavigationManager NavigationManager
+@inject AuthenticationManagement Authentication
 
 <PageTitle>Tournoi Salade TCL</PageTitle>
 
@@ -36,14 +39,28 @@
 </RadzenDataGrid>
 
 @code {
-
     RadzenDataGrid<Player> playersGrid;
     RadzenTextArea playerTextBox;
     string newPlayerName;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        CurrentTournament.Load();
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);  
+        var code = QueryHelpers.ParseQuery(uri.Query).TryGetValue("code", out var type) ? type.First() : "";
+
+        if (code == "386392")
+        {    
+            await Authentication.StoreCode(code);
+            await CurrentTournament.Load();
+        }
+        else
+        {
+            code = await Authentication.GetCode();
+            if (code != "386392")           
+            {
+                NavigationManager.NavigateTo("/notfound");
+            }
+        }
     }
 
     async Task DeletePlayer(string playerName)

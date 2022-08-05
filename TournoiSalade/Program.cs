@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Radzen;
@@ -9,12 +10,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<TooltipService>();
 builder.Services.AddScoped<ContextMenuService>();
+builder.Services.AddScoped<AuthenticationManagement>();
+
 builder.Services.AddSingleton<ITournament, Tournament>();
+
 
 var app = builder.Build();
 
@@ -34,5 +39,7 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+app.MapFallbackToPage("/players/{**segment}", "/_HostPlayers");
+//app.MapFallbackToAreaPage("/players/{*clientroutes:nonfile}", "/_HostPlayers");
 
 app.Run();

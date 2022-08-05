@@ -3,6 +3,8 @@
 @using Radzen
 @inject ITournament CurrentTournament
 @inject DialogService DialogServices
+@inject NavigationManager NavigationManager
+@inject AuthenticationManagement Authentication
 
 <PageTitle>Tours</PageTitle>
 
@@ -54,6 +56,15 @@
 @code {
     RadzenDataGrid<Match> matchGrid;
     bool CloseDisabled;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var code = await Authentication.GetCode();
+        if (code != "386392")           
+        {
+            NavigationManager.NavigateTo("/notfound");
+        }
+    }
 
     private async Task NewRound()
     {
