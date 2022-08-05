@@ -2,6 +2,8 @@
 @using TournoiSalade.Data
 @using Radzen
 @inject ITournament CurrentTournament
+@inject NavigationManager NavigationManager
+@inject AuthenticationManagement Authentication
 
 <PageTitle>Classement</PageTitle>
 
@@ -18,3 +20,14 @@
         <RadzenDataGridColumn TItem="Player" Property="Score" Title="Points" />
     </Columns>
 </RadzenDataGrid>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var code = await Authentication.GetCode();
+        if (code != "386392")           
+        {
+            NavigationManager.NavigateTo("/notfound");
+        }
+    }
+}
