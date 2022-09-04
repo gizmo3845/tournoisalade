@@ -1,0 +1,12 @@
+version: '3.3'
+services:
+  salade:
+    image: tournoisalade:prod
+    container_name: salade
+    ports:
+      - 443:443
+      - 80:80
+    volumes:
+      - /home/debian/tournoisalade/db:/app/publish/wwwroot/db
+      - /etc/localtime:/etc/localtime:ro
+

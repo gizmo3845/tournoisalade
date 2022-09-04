@@ -51,7 +51,7 @@ namespace TournoiSalade.Data
 			if (_isLoaded)
 				return true;
 
-			var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "tournament.json");
+			var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "db", "tournament.json");
 			if(!File.Exists(path))
 				return false;
 
@@ -71,7 +71,7 @@ namespace TournoiSalade.Data
         {
 			string jsonString = JsonSerializer.Serialize(this);
 
-			var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "tournament.json");
+			var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "db", "tournament.json");
 
 			await File.WriteAllTextAsync(path, jsonString);
 
