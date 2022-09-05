@@ -1,5 +1,20 @@
 version: '3.3'
 services:
+  webserver:
+    image: nginx:latest
+    ports:
+      - 80:80
+      - 443:443
+    restart: always
+    volumes:
+      - /home/debian/tournoisalade/nginx/conf/:/etc/nginx/conf.d/:ro
+      - /home/debian/tournoisalade/certbot/www:/var/www/certbot/:ro
+      - /home/debian/tournoisalade/certbot/conf/:/etc/nginx/ssl/:ro
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - /home/debian/tournoisalade/certbot/www:/var/www/certbot/:rw
+      - /home/debian/tournoisalade/certbot/conf/:/etc/letsencrypt/:rw
   salade:
     image: tournoisalade:prod
     container_name: salade
