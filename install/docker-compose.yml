@@ -7,6 +7,6 @@ services:
       - 443:443
       - 80:80
     volumes:
-      - /home/debian/tournoisalade/db/tournament.json:/app/wwwroot/db/tournament.json
+      - /home/debian/tournoisalade/db:/app/wwwroot/db
       - /etc/localtime:/etc/localtime:ro
 
