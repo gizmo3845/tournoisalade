@@ -16,8 +16,8 @@ services:
   certbot:
     image: certbot/certbot:latest
     volumes:
-      - /home/debian/tournoisalade/certbot/conf/:/etc/letsencrypt/
-      - /home/debian/tournoisalade/certbot/www:/var/www/certbot/
+      - /home/debian/tournoisalade/certbot/conf/:/etc/letsencrypt/:rw
+      - /home/debian/tournoisalade/certbot/www:/var/www/certbot/:rw
 
   salade:
     image: tournoisalade:prod
