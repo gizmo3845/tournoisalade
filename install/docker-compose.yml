@@ -6,22 +6,31 @@ services:
       - 80:80
       - 443:443
     restart: always
+    networks:
+      - salade-network
     volumes:
       - /home/debian/tournoisalade/nginx/conf/:/etc/nginx/conf.d/:ro
-      - /home/debian/tournoisalade/certbot/www:/var/www/certbot/:ro
-      - /home/debian/tournoisalade/certbot/conf/:/etc/nginx/ssl/:ro
+      - /home/debian/tournoisalade/certbot/conf/:/etc/letsencrypt
+      - /home/debian/tournoisalade/certbot/www:/var/www/certbot
+
   certbot:
     image: certbot/certbot:latest
     volumes:
-      - /home/debian/tournoisalade/certbot/www:/var/www/certbot/:rw
-      - /home/debian/tournoisalade/certbot/conf/:/etc/letsencrypt/:rw
+      - /home/debian/tournoisalade/certbot/conf/:/etc/letsencrypt/
+      - /home/debian/tournoisalade/certbot/www:/var/www/certbot/
+
   salade:
     image: tournoisalade:prod
     container_name: salade
     ports:
-      - 443:443
-      - 80:80
+      - 5000:5000
+    networks:
+      - salade-network
     volumes:
       - /home/debian/tournoisalade/db:/app/wwwroot/db
       - /etc/localtime:/etc/localtime:ro
+
+networks:
+    salade-network:
+      name: salade-network
 

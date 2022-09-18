@@ -19,10 +19,10 @@ builder.Services.AddScoped<ContextMenuService>();
 builder.Services.AddScoped<AuthenticationManagement>();
 
 builder.Services.AddSingleton<ITournament, Tournament>();
-
+// Set the listening port to 5000
+builder.WebHost.UseUrls("http://localhost:5000");
 
 var app = builder.Build();
-
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -31,7 +31,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// Remove https redirection
+//app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
