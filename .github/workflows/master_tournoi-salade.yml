@@ -23,7 +23,9 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Build the Docker image
-        run: docker build . --file TournoiSalade/Dockerfile --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$(date +%s)
+        run: |
+          cd TournoiSalade
+          docker build . --file Dockerfile --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$(date +%s)
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
