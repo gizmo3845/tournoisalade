@@ -20,12 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      
-      - name: Build the Docker image
-        run: |
-          cd TournoiSalade
-          docker build . --file Dockerfile --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$(date +%s)
+      - uses: actions/checkout@v2   
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
