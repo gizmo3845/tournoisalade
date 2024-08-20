@@ -9,15 +9,15 @@ services:
     networks:
       - salade-network
     volumes:
-      - /home/debian/tournoisalade/nginx/conf/:/etc/nginx/conf.d/:ro
-      - /home/debian/tournoisalade/certbot/conf/:/etc/letsencrypt
-      - /home/debian/tournoisalade/certbot/www:/var/www/certbot
+      - /home/gizmo/sites/tournoisalade/nginx/conf/:/etc/nginx/conf.d/:ro
+      - /home/gizmo/sites/tournoisalade/certbot/conf/:/etc/letsencrypt
+      - /home/gizmo/sites/tournoisalade/certbot/www:/var/www/certbot
 
   certbot:
     image: certbot/certbot:latest
     volumes:
-      - /home/debian/tournoisalade/certbot/conf/:/etc/letsencrypt/:rw
-      - /home/debian/tournoisalade/certbot/www:/var/www/certbot/:rw
+      - /home/gizmo/sites/tournoisalade/certbot/conf/:/etc/letsencrypt/:rw
+      - /home/gizmo/sites/tournoisalade/certbot/www:/var/www/certbot/:rw
 
   salade:
     image: tournoisalade:prod
@@ -27,7 +27,7 @@ services:
     networks:
       - salade-network
     volumes:
-      - /home/debian/tournoisalade/db:/app/wwwroot/db
+      - /home/gizmo/sites/tournoisalade/db:/app/wwwroot/db
       - /etc/localtime:/etc/localtime:ro
 
 networks:
