@@ -1,38 +1,41 @@
 ﻿@page "/tours"
 @using TournoiSalade.Data
 @using Radzen
-@inject ITournament CurrentTournament
+@inject Tournament CurrentTournament
 @inject DialogService DialogServices
 @inject NavigationManager NavigationManager
 @inject AuthenticationManagement Authentication
 
 <PageTitle>Tours</PageTitle>
 
-<h1>Tour @CurrentTournament.TourNumber</h1>
+<h1>Tour @CurrentTournament.TournamentData.TourNumber</h1>
 
 <RadzenButton Click=@(args => NextRound()) Text="Prochain tour" Disabled="@DisabledNextRound()" Icon="refresh" ButtonStyle="ButtonStyle.Success" />
+    
+@if (CurrentTournament.TournamentData.NbPlayerPerTeam == 2)
+{
+    <br/>
+    <br/>
+
+    <RadzenDataGrid AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.TournamentData.CurrentTour.ExcludedPlayers" TItem="Player">
+        <Columns>
+            <RadzenDataGridColumn TItem="Player" Title="Joueurs ne participants pas à ce tour">
+                <Template Context="data">
+                    @data.Name
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
 
 <br />
 <br />
 
-<RadzenDataGrid AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.CurrentTour.ExcludedPlayers" TItem="Player">
-    <Columns>
-        <RadzenDataGridColumn TItem="Player" Title="Joueurs ne participants pas à ce tour">
-            <Template Context="data">
-                @data.Name
-            </Template>
-        </RadzenDataGridColumn>
-    </Columns>
-</RadzenDataGrid>
-
-<br />
-<br />
-
-<RadzenDataGrid @ref="matchGrid" AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.CurrentTour.Matches" TItem="Match">
+<RadzenDataGrid @ref="matchGrid" AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.TournamentData.CurrentTour.Matches" TItem="Match">
     <Columns>
         <RadzenDataGridColumn TItem="Match" Title="Team1">
             <Template Context="data">
-                @data.Team1.Player1.Name - @data.Team1.Player2.Name
+                @(string.Join(" - ", data.Team1.Teammates))
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Match" Title="Score Team1">
@@ -47,7 +50,7 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Match" Title="Team2">
             <Template Context="data">
-                @data.Team2.Player1.Name - @data.Team2.Player2.Name
+                @(string.Join(" - ", data.Team2.Teammates))
             </Template>
         </RadzenDataGridColumn>
     </Columns>
@@ -64,6 +67,8 @@
         {
             NavigationManager.NavigateTo("/notfound");
         }
+
+        await CurrentTournament.Load();
     }
 
     private async Task NewRound()
@@ -93,7 +98,7 @@
 
     bool DisabledNextRound()
     {
-        return (CurrentTournament.TourNumber > 0 && !CurrentTournament.CurrentTour.AllMatchHaveResult()) || CurrentTournament.Players.Count < 4;
+        return (CurrentTournament.TournamentData.TourNumber > 0 && !CurrentTournament.TournamentData.CurrentTour.AllMatchHaveResult()) || CurrentTournament.TournamentData.Players.Count < 4;
     }
 
     void OnChange()

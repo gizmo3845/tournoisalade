@@ -1,7 +1,7 @@
 ﻿@page "/classement"
 @using TournoiSalade.Data
 @using Radzen
-@inject ITournament CurrentTournament
+@inject Tournament CurrentTournament
 @inject NavigationManager NavigationManager
 @inject AuthenticationManagement Authentication
 
@@ -29,5 +29,7 @@
         {
             NavigationManager.NavigateTo("/notfound");
         }
+
+        await CurrentTournament.Load();
     }
 }

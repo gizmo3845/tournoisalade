@@ -4,38 +4,44 @@ using System.Text.Json.Serialization;
 
 namespace TournoiSalade.Data
 {
-	public class Tournament : ITournament
+	public class Tournament
 	{
 		private bool _isLoaded = false;
+        private AuthenticationManagement _authenticationManagement;
 
-		public List<Player> Players { get; set; } = new List<Player>();
-		public Tour CurrentTour { get; set; } = new Tour();
+		public TournamentData TournamentData { get; set; }
 
-		public List<Player> LastExcludedPlayers { get; set; } = new List<Player>();
-		public int TourNumber { get; set; } = 0;
+        public Tournament(AuthenticationManagement authenticationManagement)
+        {
+            _authenticationManagement = authenticationManagement;
+            TournamentData = new TournamentData();
+        }
 
 		public async Task New()
         {
-			CurrentTour.New();
-			Players.Clear();
-			TourNumber = 0;
-			LastExcludedPlayers = new();
-			await Save();
+			int? nbPlayerPerTeam = await _authenticationManagement.GetNbPlayerPerTeam();
+
+            TournamentData.CurrentTour.New(nbPlayerPerTeam.Value);
+            TournamentData.Players.Clear();
+            TournamentData.TourNumber = 0;
+            TournamentData.LastExcludedPlayers = new();
+            TournamentData.NbPlayerPerTeam = _authenticationManagement.GetNbPlayerPerTeam().Result ?? 0;
+            await Save();
 		}
 
 		public async Task NextTour()
         {
-			CurrentTour.Generate(Players, LastExcludedPlayers, out List<Player> lastExcludedPlayers);
-			LastExcludedPlayers = lastExcludedPlayers;
+            TournamentData.CurrentTour.Generate(TournamentData.NbPlayerPerTeam, TournamentData.Players, TournamentData.LastExcludedPlayers, out List<Player> lastExcludedPlayers);
+            TournamentData.LastExcludedPlayers = lastExcludedPlayers;
 
-			TourNumber++;
+            TournamentData.TourNumber++;
 
 			await Save();
 		}
 
 		public void ComputePlayerPoints()
         {
-            foreach (var match in CurrentTour.Matches)
+            foreach (var match in TournamentData.CurrentTour.Matches)
             {
 				match.UpdatePlayerScore();
             }
@@ -43,7 +49,7 @@ namespace TournoiSalade.Data
 
 		public List<Player> GetPlayerRanks()
         {
-			return Players.OrderByDescending(p => p.Score).ToList();
+			return TournamentData.Players.OrderByDescending(p => p.Score).ToList();
         }
 
         public async Task<bool> Load()
@@ -51,25 +57,31 @@ namespace TournoiSalade.Data
 			if (_isLoaded)
 				return true;
 
-			var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "db", "tournament.json");
-			if(!File.Exists(path))
-				return false;
+            try
+            {
+                var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "db", "tournament.json");
+                if(!File.Exists(path))
+                    return false;
 
-			var jsonString = await File.ReadAllTextAsync(path);
-			var tournament = JsonSerializer.Deserialize<Tournament>(jsonString);
-			Players = tournament.Players;
-			CurrentTour = tournament.CurrentTour;
-			LastExcludedPlayers = tournament.LastExcludedPlayers;
-			TourNumber = tournament.TourNumber;
+                var jsonString = await File.ReadAllTextAsync(path);
+                TournamentData = JsonSerializer.Deserialize<TournamentData>(jsonString);
 
-			_isLoaded = true;
+                _isLoaded = true;
 
-			return true;
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
         }
 
         public async Task<bool> Save()
         {
-			string jsonString = JsonSerializer.Serialize(this);
+            var playerPerTeam = await _authenticationManagement.GetNbPlayerPerTeam();
+            TournamentData.NbPlayerPerTeam = playerPerTeam ?? 0;
+
+			string jsonString = JsonSerializer.Serialize(TournamentData);
 
 			var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "db", "tournament.json");
 

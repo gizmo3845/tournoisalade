@@ -2,14 +2,14 @@
 @using TournoiSalade.Data
 @using Radzen
 @namespace TournoiSalade.Pages
-@inject ITournament CurrentTournament
+@inject Tournament CurrentTournament
 
-<h1>Tour @CurrentTournament.TourNumber</h1>
+<h1>Tour @CurrentTournament.TournamentData.TourNumber</h1>
 
 <br />
 <br />
 
-<RadzenDataGrid AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.CurrentTour.ExcludedPlayers" TItem="Player">
+<RadzenDataGrid AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.TournamentData.CurrentTour.ExcludedPlayers" TItem="Player">
     <Columns>
         <RadzenDataGridColumn TItem="Player" Title="Joueurs ne participants pas à ce tour">
             <Template Context="data">
@@ -22,11 +22,14 @@
 <br />
 <br />
 
-<RadzenDataGrid AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.CurrentTour.Matches" TItem="Match">
+<RadzenDataGrid AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.TournamentData.CurrentTour.Matches" TItem="Match">
     <Columns>
         <RadzenDataGridColumn TItem="Match" Title="Team1">
             <Template Context="data">
-                @data.Team1.Player1.Name - @data.Team1.Player2.Name
+                @foreach (var player in data.Team1.Teammates)
+                {
+                    @player.Name
+                }
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Match" Title="Score Team1">
@@ -41,7 +44,10 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Match" Title="Team2">
             <Template Context="data">
-                @data.Team2.Player1.Name - @data.Team2.Player2.Name
+                @foreach (var player in data.Team2.Teammates)
+                {
+                    @player.Name
+                }
             </Template>
         </RadzenDataGridColumn>
     </Columns>
@@ -65,5 +71,9 @@
 </RadzenDataGrid>
 
 @code {
+    protected override async Task OnInitializedAsync()
+    {
+        await CurrentTournament.Load();
+    }
 }
 
