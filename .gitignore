@@ -63,7 +63,6 @@ $RECYCLE.BIN/
 *.cab
 *.msi
 *.msix
-*.msm
 *.msp
 
 # Windows shortcuts
