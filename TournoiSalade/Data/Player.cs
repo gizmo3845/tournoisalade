@@ -8,6 +8,14 @@ namespace TournoiSalade.Data
 
         public bool IsChild { get; set; }
 
+        public void AddScore(bool winner)
+        {
+            if (winner)
+                Score += IsChild ? 4 : 3;
+            else
+                Score += IsChild ? 1 : 0;
+        }
+
         public override bool Equals(object? player)
         {
 			if (player == null)

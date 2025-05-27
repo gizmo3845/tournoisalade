@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using TournoiSalade.Utils;
 
 namespace TournoiSalade.Data
@@ -9,15 +10,20 @@ namespace TournoiSalade.Data
 
         public List<Match> Matches { get; set; } = new();
         public List<Player> ExcludedPlayers { get; set; } = new();
+        private int _nbPlayerPerTeam;
 
-        public void New()
+        public void New(int nbPlayerPerTeam)
         {
+            _nbPlayerPerTeam = nbPlayerPerTeam;
             Matches?.Clear();
             ExcludedPlayers?.Clear();
         }
 
-		public void Generate(List<Player> players, List<Player> forcePlayers, out List<Player> excludedPlayers)
+		public void Generate(int nbPlayerPerTeam, List<Player> players, List<Player> forcePlayers, out List<Player> excludedPlayers)
         {
+            _nbPlayerPerTeam = nbPlayerPerTeam;
+
+            ExcludedPlayers?.Clear();
             players.Shuffle();
             List<Team> teams = GenerateTeams(players, forcePlayers);
             GenerateMatches(teams, forcePlayers);
@@ -27,25 +33,43 @@ namespace TournoiSalade.Data
 
         private List<Team> GenerateTeams(List<Player> players, List<Player> forcePlayers)
         {
-            List<Team> teams = new List<Team>();
-            var teamPlayers = new List<Player>();
-            int teamId = 1;
-            for (int i = 0; i < players.Count / 2; i++)
-            {
-                Team team = new Team() { Id = teamId, Player1 = players[i], Player2 = players[players.Count - i - 1] };
-                teams.Add(team);
-                teamPlayers.Add(team.Player1);
-                teamPlayers.Add(team.Player2);
+            Random rng = new Random();
+            players = players.OrderBy(a => rng.Next()).ToList();
 
-                teamId++;
+            List<Team> teams = new List<Team>();
+
+            int teamId = 1;
+            for (int i = 0; i < players.Count / _nbPlayerPerTeam; i++)
+            {
+                var team = new Team() { Id = teamId++ };
+                team.Teammates.AddRange(players.Skip(i * _nbPlayerPerTeam).Take(_nbPlayerPerTeam));
+                teams.Add(team);
             }
 
-            ExcludedPlayers = players.Except(teamPlayers).ToList();
-
-            if (ExcludedPlayers != null && ExcludedPlayers.Intersect(forcePlayers).Count() > 0)
+            if(teams.Count % 2 != 0)
             {
-                players.Shuffle();
-                return GenerateTeams(players, forcePlayers);
+                teams.Remove(teams.Last());
+            }
+
+            // If there are remaining players, distribute them into the teams only if a team has more than 2 players
+            List<Player> remainingPlayers = players.Skip(teams.Count * _nbPlayerPerTeam).ToList();
+
+            if (_nbPlayerPerTeam > 2)
+            {
+                ExcludedPlayers?.Clear();
+                for (int j = 0; j < remainingPlayers.Count; j++)
+                {
+                    teams[j % teams.Count].Teammates.Add(remainingPlayers[j]);
+                }
+            }
+            else
+            {
+                ExcludedPlayers = remainingPlayers;
+                if (ExcludedPlayers.Intersect(forcePlayers).Any()) 
+                { 
+                    players.Shuffle(); 
+                    return GenerateTeams(players, forcePlayers); 
+                } 
             }
 
             return teams;
@@ -69,26 +93,34 @@ namespace TournoiSalade.Data
 
         private void GenerateMatches(List<Team> teams, List<Player> forcePlayers)
         {
-            // If not modulo 4 some teams should be excluded
+            // If not modulo 2 some teams should be excluded
             int extraTeamCount = teams.Count % 2;
             if (extraTeamCount > 0)
             {
                 IEnumerable<Team>? teamsToRemove;
                 int maxTry = 10;
                 // Remove extra team at last of the list
+                bool forcedPlayers = false;
                 do
                 {
                     teams.Shuffle();
                     teamsToRemove = teams.Skip(Math.Max(0, teams.Count() - extraTeamCount));
                     maxTry--;
                     // If teams to remove contains forcePlayers then do nothing and exclude other teams
-                }
-                while (teamsToRemove.Any(t => forcePlayers.Contains(t.Player1) || forcePlayers.Contains(t.Player2)) || maxTry > 0);
+                    foreach (var teamToRemove in teamsToRemove)
+                    {
+                        if (teamToRemove.Teammates.Any(p => forcePlayers.Contains(p)))
+                        {
+                            forcedPlayers = true;
+                            break;
+                        }
+                    }
+
+                } while (forcedPlayers && maxTry > 0);
 
                 foreach (var team in teamsToRemove)
                 {
-                    ExcludedPlayers.Add(team.Player1);
-                    ExcludedPlayers.Add(team.Player2);
+                    ExcludedPlayers.AddRange(team.Teammates);
                     teams.Remove(team);
                 }
             }
@@ -106,7 +138,19 @@ namespace TournoiSalade.Data
             string output = "";
             foreach (var match in Matches)
             {
-                output += $"({match.Team1.Player1.Name},{match.Team1.Player2.Name}) VS ({match.Team2.Player1.Name},{match.Team2.Player2.Name})" + Environment.NewLine;
+                output += "(";
+                foreach (var team1Teammate in match.Team1.Teammates)
+                {
+                    output += $"{team1Teammate},";
+                }
+
+                output = output.TrimEnd(',') + ") VS (";
+
+                foreach (var team2Teammate in match.Team2.Teammates)
+                {
+                    output += $"{team2Teammate},";
+                }
+                output = output.TrimEnd(',') + ")" + Environment.NewLine;
             }
 
             return output;

@@ -18,7 +18,7 @@ builder.Services.AddScoped<TooltipService>();
 builder.Services.AddScoped<ContextMenuService>();
 builder.Services.AddScoped<AuthenticationManagement>();
 
-builder.Services.AddSingleton<ITournament, Tournament>();
+builder.Services.AddScoped<Tournament>();
 
 // Set the listening port to 5000
 //builder.WebHost.UseUrls("http://localhost:80");

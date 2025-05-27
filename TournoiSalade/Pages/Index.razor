@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.WebUtilities
 @using TournoiSalade.Data
 @using Radzen
-@inject ITournament CurrentTournament
+@inject Tournament CurrentTournament
 @inject DialogService DialogServices
 @inject NavigationManager NavigationManager
 @inject AuthenticationManagement Authentication
@@ -17,11 +17,11 @@
     <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="add_circle_outline" Class="m-2" Click=@AddPlayer Text="Ajouter" />
 </RadzenCard>
 <br />
-<RadzenDataGrid @ref="playersGrid" AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.Players" TItem="Player">
+<RadzenDataGrid @ref="playersGrid" AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.TournamentData.Players" TItem="Player">
     <Columns>
         <RadzenDataGridColumn Width="50px" TItem="Player" Title="#" Filterable="false" Sortable="false" TextAlign="TextAlign.Center">
             <Template Context="data">
-                @(CurrentTournament.Players.IndexOf(data) + 1)
+                @(CurrentTournament.TournamentData.Players.IndexOf(data) + 1)
             </Template>
         </RadzenDataGridColumn>      
         <RadzenDataGridColumn TItem="Player" Property="Name" Title="Nom" />
@@ -47,9 +47,13 @@
     {
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);  
         var code = QueryHelpers.ParseQuery(uri.Query).TryGetValue("code", out var type) ? type.First() : "";
+        var nbPlayers = QueryHelpers.ParseQuery(uri.Query).TryGetValue("players", out var players) ? players.First() : "";
 
         if (code == "386392")
         {    
+            var nbPlayerPerTeam = String.IsNullOrEmpty(nbPlayers) ? 2 : int.Parse(nbPlayers);
+            await Authentication.StoreNbPlayerPerTeam(nbPlayerPerTeam);
+
             await Authentication.StoreCode(code);
             await CurrentTournament.Load();
         }
@@ -60,6 +64,10 @@
             {
                 NavigationManager.NavigateTo("/notfound");
             }
+            else
+            {
+                await CurrentTournament.Load();
+            }   
         }
     }
 
@@ -69,9 +77,9 @@
 
         if (yes.HasValue && yes.Value)
         {
-            var player = CurrentTournament.Players.FirstOrDefault(p => p.Name == playerName);
+            var player = CurrentTournament.TournamentData.Players.FirstOrDefault(p => p.Name == playerName);
             if (player != null)
-                CurrentTournament.Players.Remove(player);
+                CurrentTournament.TournamentData.Players.Remove(player);
 
             await CurrentTournament.Save();
             await this.playersGrid.Reload();
@@ -90,15 +98,15 @@
             if (String.IsNullOrEmpty(playerName))
                 continue;
 
-            if( CurrentTournament.Players.Any(p => p.Name.ToLower() == playerName.ToLower()) )
+            if( CurrentTournament.TournamentData.Players.Any(p => p.Name.ToLower() == playerName.ToLower()) )
             {
                 existingPlayers.Add(playerName);
             }
             else
             {
                 Player p = new Player() { Name = playerName };
-                CurrentTournament.Players.Add(p);
-                CurrentTournament.Players.Sort((a, b) => a.Name.CompareTo(b.Name));                
+                CurrentTournament.TournamentData.Players.Add(p);
+                CurrentTournament.TournamentData.Players.Sort((a, b) => a.Name.CompareTo(b.Name));                
             }
         }        
 
