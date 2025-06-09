@@ -47,12 +47,12 @@
     {
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);  
         var code = QueryHelpers.ParseQuery(uri.Query).TryGetValue("code", out var type) ? type.First() : "";
-        var nbPlayers = QueryHelpers.ParseQuery(uri.Query).TryGetValue("players", out var players) ? players.First() : "";
+        var vache = QueryHelpers.ParseQuery(uri.Query).TryGetValue("vache", out var isQueryVache) ? isQueryVache.First() : "";
 
         if (code == "386392")
         {    
-            var nbPlayerPerTeam = String.IsNullOrEmpty(nbPlayers) ? 2 : int.Parse(nbPlayers);
-            await Authentication.StoreNbPlayerPerTeam(nbPlayerPerTeam);
+            var isVache = !String.IsNullOrEmpty(vache) && vache == "1";
+            await Authentication.StoreIsVache(isVache);
 
             await Authentication.StoreCode(code);
             await CurrentTournament.Load();

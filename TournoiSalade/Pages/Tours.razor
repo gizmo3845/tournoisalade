@@ -12,7 +12,7 @@
 
 <RadzenButton Click=@(args => NextRound()) Text="Prochain tour" Disabled="@DisabledNextRound()" Icon="refresh" ButtonStyle="ButtonStyle.Success" />
     
-@if (CurrentTournament.TournamentData.NbPlayerPerTeam == 2)
+@if (! CurrentTournament.TournamentData.IsVache)
 {
     <br/>
     <br/>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using TournoiSalade.Utils;
 
@@ -10,18 +11,18 @@ namespace TournoiSalade.Data
 
         public List<Match> Matches { get; set; } = new();
         public List<Player> ExcludedPlayers { get; set; } = new();
-        private int _nbPlayerPerTeam;
+        private bool _isVache;
 
-        public void New(int nbPlayerPerTeam)
+        public void New(bool isVache)
         {
-            _nbPlayerPerTeam = nbPlayerPerTeam;
+            _isVache = isVache;
             Matches?.Clear();
             ExcludedPlayers?.Clear();
         }
 
-		public void Generate(int nbPlayerPerTeam, List<Player> players, List<Player> forcePlayers, out List<Player> excludedPlayers)
+		public void Generate(bool isVache, List<Player> players, List<Player> forcePlayers, out List<Player> excludedPlayers)
         {
-            _nbPlayerPerTeam = nbPlayerPerTeam;
+            _isVache = isVache;
 
             ExcludedPlayers?.Clear();
             players.Shuffle();
@@ -33,16 +34,97 @@ namespace TournoiSalade.Data
 
         private List<Team> GenerateTeams(List<Player> players, List<Player> forcePlayers)
         {
+            // Mix players randomly
+            Random rng = new Random();
+            players = players.OrderBy(a => rng.Next()).ToList();
+
+            List<Team> teams = new List<Team>();
+
+            if (! _isVache)
+            {
+                teams = GenerateTeams2(players, forcePlayers);
+            }
+            else
+            {
+                int n = players.Count;
+
+                // 2. Trouver le meilleur nombre pair d’équipes couvrant tous les joueurs
+                // Taille d’équipe entre 2 et 4, équilibrée
+                teams = EqualizeTeams(players);
+            }
+
+            return teams;
+        }
+
+        private static List<Team> EqualizeTeams(List<Player> players)
+        {
+            int n = players.Count;
+            List<Team> bestRepartition = null;
+
+            for (int nbEquipes = n; nbEquipes >= 2; nbEquipes--)
+            {
+                if (nbEquipes % 2 != 0) continue;
+
+                int baseTaille = n / nbEquipes;
+                int reste = n % nbEquipes;
+
+                if (baseTaille < 2) continue; // min 2 joueurs par équipe
+
+                var teams = new List<Team>();
+                int index = 0;
+
+                for (int i = 0; i < nbEquipes; i++)
+                {
+                    int taille = baseTaille + (reste-- > 0 ? 1 : 0);
+
+                    var team = new Team();
+                    team.Teammates.AddRange(players.Skip(index).Take(taille).ToList());
+                    teams.Add(team);
+
+                    index += taille;
+                }
+
+                if (index == n)
+                {
+                    bestRepartition = teams;
+                    break; // On prend la 1re répartition valide la plus équilibrée avec le plus d’équipes
+                }
+            }
+
+            if (bestRepartition == null)
+                throw new Exception("Impossible de répartir les joueurs correctement.");
+        
+            return bestRepartition;
+        }
+
+        private void GenerateMatches(List<Team> teams, List<Player> forcePlayers)
+        {
+            if (! _isVache)
+            {
+                GenerateMatches2(teams, forcePlayers);
+                return;
+            }
+
+            Matches = new List<Match>();
+            for (int i = 0; i < teams.Count; i += 2)
+            {
+                Match match = new Match() { Team1 = teams[i], Team2 = teams[i + 1] };
+                Matches.Add(match);
+            }
+        }
+
+        private List<Team> GenerateTeams2(List<Player> players, List<Player> forcePlayers)
+        {
             Random rng = new Random();
             players = players.OrderBy(a => rng.Next()).ToList();
 
             List<Team> teams = new List<Team>();
 
             int teamId = 1;
-            for (int i = 0; i < players.Count / _nbPlayerPerTeam; i++)
+            for (int i = 0; i < players.Count / 2; i++)
             {
                 var team = new Team() { Id = teamId++ };
-                team.Teammates.AddRange(players.Skip(i * _nbPlayerPerTeam).Take(_nbPlayerPerTeam));
+                team.Teammates.AddRange(players.Skip(i * 2).Take(2));
                 teams.Add(team);
             }
 
@@ -52,26 +134,15 @@ namespace TournoiSalade.Data
             }
 
             // If there are remaining players, distribute them into the teams only if a team has more than 2 players
-            List<Player> remainingPlayers = players.Skip(teams.Count * _nbPlayerPerTeam).ToList();
+            var remainingPlayers = players.Skip(teams.Count * 2);
 
-            if (_nbPlayerPerTeam > 2)
-            {
-                ExcludedPlayers?.Clear();
-                for (int j = 0; j < remainingPlayers.Count; j++)
-                {
-                    teams[j % teams.Count].Teammates.Add(remainingPlayers[j]);
-                }
-            }
-            else
-            {
-                ExcludedPlayers = remainingPlayers;
-                if (ExcludedPlayers.Intersect(forcePlayers).Any()) 
-                { 
-                    players.Shuffle(); 
-                    return GenerateTeams(players, forcePlayers); 
-                } 
-            }
-
+            ExcludedPlayers = remainingPlayers.ToList();
+            if (ExcludedPlayers.Intersect(forcePlayers).Any()) 
+            { 
+                players.Shuffle(); 
+                return GenerateTeams2(players, forcePlayers); 
+            } 
+            
             return teams;
         }
 
@@ -91,7 +162,7 @@ namespace TournoiSalade.Data
             return (match == null);
         }
 
-        private void GenerateMatches(List<Team> teams, List<Player> forcePlayers)
+        private void GenerateMatches2(List<Team> teams, List<Player> forcePlayers)
         {
             // If not modulo 2 some teams should be excluded
             int extraTeamCount = teams.Count % 2;

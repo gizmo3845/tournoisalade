@@ -19,19 +19,20 @@ namespace TournoiSalade.Data
 
 		public async Task New()
         {
-			int? nbPlayerPerTeam = await _authenticationManagement.GetNbPlayerPerTeam();
+			var isVache = await _authenticationManagement.GetIsVache();
 
-            TournamentData.CurrentTour.New(nbPlayerPerTeam.Value);
+            TournamentData.CurrentTour.New(isVache != null && isVache.Value);
             TournamentData.Players.Clear();
             TournamentData.TourNumber = 0;
             TournamentData.LastExcludedPlayers = new();
-            TournamentData.NbPlayerPerTeam = _authenticationManagement.GetNbPlayerPerTeam().Result ?? 0;
+            TournamentData.IsVache = isVache != null && isVache.Value;
+
             await Save();
 		}
 
 		public async Task NextTour()
         {
-            TournamentData.CurrentTour.Generate(TournamentData.NbPlayerPerTeam, TournamentData.Players, TournamentData.LastExcludedPlayers, out List<Player> lastExcludedPlayers);
+            TournamentData.CurrentTour.Generate(TournamentData.IsVache, TournamentData.Players, TournamentData.LastExcludedPlayers, out List<Player> lastExcludedPlayers);
             TournamentData.LastExcludedPlayers = lastExcludedPlayers;
 
             TournamentData.TourNumber++;
@@ -78,8 +79,8 @@ namespace TournoiSalade.Data
 
         public async Task<bool> Save()
         {
-            var playerPerTeam = await _authenticationManagement.GetNbPlayerPerTeam();
-            TournamentData.NbPlayerPerTeam = playerPerTeam ?? 0;
+            var isVache = await _authenticationManagement.GetIsVache();
+            TournamentData.IsVache = isVache != null && isVache.Value;
 
 			string jsonString = JsonSerializer.Serialize(TournamentData);
 

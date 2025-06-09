@@ -7,6 +7,6 @@
 
         public List<Player> LastExcludedPlayers { get; set; } = new List<Player>();
         public int TourNumber { get; set; } = 0;
-        public int NbPlayerPerTeam { get; set; } = 0;
+        public bool IsVache { get; set; } = false;
     }
 }

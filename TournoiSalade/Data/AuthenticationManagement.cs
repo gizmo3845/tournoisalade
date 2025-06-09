@@ -16,12 +16,19 @@ namespace TournoiSalade.Data
             return await _localStorageService.GetItemAsync<string>("accessCode");
         }
 
-        public async Task<int?> GetNbPlayerPerTeam()
+        public async Task<bool?> GetIsVache()
         {
-            var nbPlayer = await _localStorageService.GetItemAsync<int?>("playerperteam");
-            if (nbPlayer == null)
-                return 2;
-            return nbPlayer.Value;
+            try
+            {
+                var isVache = await _localStorageService.GetItemAsync<bool?>("vache");
+                if (isVache == null)
+                    return false;
+                return isVache.Value;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
         }
 
         public async Task StoreCode(string code)
@@ -32,12 +39,9 @@ namespace TournoiSalade.Data
             await _localStorageService.SetItemAsync("accessCode", code);
         }
 
-        public async Task StoreNbPlayerPerTeam(int playerPerTeam)
+        public async Task StoreIsVache(bool isVache)
         {
-            if(playerPerTeam == await GetNbPlayerPerTeam())
-                return;
-
-            await _localStorageService.SetItemAsync("playerperteam", playerPerTeam);
+            await _localStorageService.SetItemAsync("vache", isVache);
         }
     }
 }
