@@ -11,10 +11,10 @@
 
 <h1>Joueurs</h1>
 
-<RadzenCard>
+<RadzenCard Style="align-items: center;>
     <h4 class="mb-4">Ajouter des joueurs</h4>
-    <RadzenTextArea @ref="playerTextBox" Placeholder="Noms..." Rows="8" TValue="string" Change=@OnNameChange Class="w-100" />
-    <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="add_circle_outline" Class="m-2" Click=@AddPlayer Text="Ajouter" />
+    <RadzenTextArea @ref="playerTextBox" Placeholder="Noms..." Rows="8" TValue="string" Change=@OnNameChange Class="w-100"/>
+    <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="add_circle_outline" Class="m-2" Click=@AddPlayer Text="Ajouter" Style="width: 100%" />
 </RadzenCard>
 <br />
 <RadzenDataGrid @ref="playersGrid" AllowFiltering="false" AllowPaging="false" PageSize="100" AllowSorting="false" Data="@CurrentTournament.TournamentData.Players" TItem="Player">
